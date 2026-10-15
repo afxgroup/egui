@@ -152,18 +152,18 @@ impl FontCell {
             return None;
         }
 
-        let mut ctx = vello_cpu::RenderContext::new(width, height);
-        ctx.set_transform(kurbo::Affine::translate((-bounds.x0, -bounds.y0)));
-        ctx.set_paint(color::OpaqueColor::<color::Srgb>::WHITE);
-        ctx.fill_path(&path);
-        let mut dest = vello_cpu::Pixmap::new(width, height);
-        let mut resources = vello_cpu::Resources::new();
-        ctx.render(&mut dest, &mut resources);
-
-        let pixels = dest
-            .data_as_u8_slice()
-            .chunks_exact(4)
-            .map(|px| Color32::from_rgba_premultiplied(px[0], px[1], px[2], px[3]))
+        // vello_cpu paints no curves and only part of the straight edges on big-endian
+        // targets such as AmigaOS4, so the outline is covered in software instead.
+        let alpha = super::outline_coverage::rasterize(
+            &path,
+            bounds.x0,
+            bounds.y0,
+            width as usize,
+            height as usize,
+        );
+        let pixels = alpha
+            .iter()
+            .map(|&a| Color32::from_rgba_premultiplied(a, a, a, a))
             .collect();
         let image = ColorImage::new([width as usize, height as usize], pixels);
 

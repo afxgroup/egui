@@ -10,6 +10,7 @@ mod font_id;
 mod font_provider;
 mod font_tweak;
 mod fonts;
+mod outline_coverage;
 mod galley_cache;
 mod glyph_atlas;
 mod glyph_rasterizer;
